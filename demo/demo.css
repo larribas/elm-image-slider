@@ -1,0 +1,53 @@
+body {
+    margin: 0;
+    font-family: Helvetica, sans-serif;
+}
+
+header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #efefef;
+    margin: 0;
+    padding: 1em;
+}
+
+header h2 {
+    margin: 0 0 3rem;
+    font-size: 1.3em;
+    font-style: italic;
+    color: darkslategrey;
+}
+
+a {
+    color: var(--elm-grey);
+}
+
+a:hover {
+    color: var(--elm-blue);
+}
+
+.pudding-explanation p {
+    text-align: center;
+    margin: 2.5rem 0 1.2rem;
+    font-weight: bold;
+}
+
+.image-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5rem;
+}
+
+.image-gallery img {
+    max-width: 200px;
+    margin: 10px;
+    padding: 0;
+}
+
+.image-gallery img:hover {
+    filter: brightness(50%);
+    cursor: pointer;
+}

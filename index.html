@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width">
+
+    <title>Image Slider (Elm)</title>
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/image-slider.css">
+    <link rel="stylesheet" href="demo/demo.css">
+
+    <meta property="og:url" content="https://larribas.github.io/elm-image-slider/"/>
+    <meta property="og:title" content="Image Slider"/>
+    <meta property="og:description" content="An image slider / slideshow / carousel component for Elm"/>
+  </head>
+  <body>
+    <header>
+      <h1>Image Slider</h1>
+      <h2>a.k.a Slideshow, Gallery or Carousel</h2>
+
+      <a class="on-github" href="https://github.com/larribas/elm-image-slider">View on GitHub (larribas/elm-image-slider)</a>
+    </header>
+    <div class="pudding-explanation">
+      <p>Gifs powered by Giphy. <i>Do not click on <a href="https://www.youtube.com/watch?v=9sEI1AUFJKw">this link</a>. Consider yourself warned</i></p>
+    </div>
+    <div id="main"></div>
+    <script src="demo/demo.js"></script>
+    <script>
+      Elm.Demo.embed(document.getElementById("main"));
+    </script>
+  </body>
+</html>
