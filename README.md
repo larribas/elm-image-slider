@@ -1,5 +1,4 @@
 # elm-image-slider [![Build Status](https://travis-ci.org/larribas/elm-image-slider.svg?branch=master)](https://travis-ci.org/larribas/elm-image-slider)
-
 A multi-value input for Elm
 
 
