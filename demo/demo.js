@@ -8665,58 +8665,28 @@ var _larribas$elm_image_slider$ImageSlider$onKeyDown = function (keysAndMsgs) {
 		A2(_elm_lang$core$Json_Decode$andThen, handle, _elm_lang$html$Html_Events$keyCode));
 };
 var _larribas$elm_image_slider$ImageSlider$update = F2(
-	function (msg, model) {
+	function (msg, focusedSlide) {
 		var _p1 = msg;
-		switch (_p1.ctor) {
-			case 'ShowSlide':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{focusedSlide: _p1._0});
-			case 'NextSlide':
-				return (_elm_lang$core$Native_Utils.cmp(
-					model.focusedSlide + 1,
-					_elm_lang$core$Array$length(model.slides)) > -1) ? model : _elm_lang$core$Native_Utils.update(
-					model,
-					{focusedSlide: model.focusedSlide + 1});
-			case 'PreviousSlide':
-				return (_elm_lang$core$Native_Utils.cmp(model.focusedSlide - 1, 0) < 0) ? model : _elm_lang$core$Native_Utils.update(
-					model,
-					{focusedSlide: model.focusedSlide - 1});
-			default:
-				return model;
-		}
-	});
-var _larribas$elm_image_slider$ImageSlider$Model = F2(
-	function (a, b) {
-		return {focusedSlide: a, slides: b};
+		return _p1._0;
 	});
 var _larribas$elm_image_slider$ImageSlider$Config = F4(
 	function (a, b, c, d) {
 		return {originalUrl: a, thumbnailUrl: b, alt: c, caption: d};
 	});
-var _larribas$elm_image_slider$ImageSlider$NoOp = {ctor: 'NoOp'};
-var _larribas$elm_image_slider$ImageSlider$init = F2(
-	function (slides, i) {
-		return {
-			ctor: '_Tuple2',
-			_0: {
-				focusedSlide: ((_elm_lang$core$Native_Utils.cmp(i, 0) > -1) && (_elm_lang$core$Native_Utils.cmp(
-					i,
-					_elm_lang$core$List$length(slides)) < 0)) ? i : 0,
-				slides: _elm_lang$core$Array$fromList(slides)
-			},
-			_1: A2(
-				_elm_lang$core$Task$attempt,
-				function (_p2) {
-					return _larribas$elm_image_slider$ImageSlider$NoOp;
-				},
-				_elm_lang$dom$Dom$focus('image-slider-container'))
-		};
-	});
-var _larribas$elm_image_slider$ImageSlider$PreviousSlide = {ctor: 'PreviousSlide'};
-var _larribas$elm_image_slider$ImageSlider$NextSlide = {ctor: 'NextSlide'};
 var _larribas$elm_image_slider$ImageSlider$ShowSlide = function (a) {
 	return {ctor: 'ShowSlide', _0: a};
+};
+var _larribas$elm_image_slider$ImageSlider$init = function (i) {
+	return {
+		ctor: '_Tuple2',
+		_0: i,
+		_1: A2(
+			_elm_lang$core$Task$attempt,
+			function (_p2) {
+				return _larribas$elm_image_slider$ImageSlider$ShowSlide(i);
+			},
+			_elm_lang$dom$Dom$focus('image-slider-container'))
+	};
 };
 var _larribas$elm_image_slider$ImageSlider$viewThumbnail = F4(
 	function (conf, focusedSlide, i, image) {
@@ -8753,14 +8723,14 @@ var _larribas$elm_image_slider$ImageSlider$viewThumbnail = F4(
 			},
 			{ctor: '[]'});
 	});
-var _larribas$elm_image_slider$ImageSlider$viewThumbnails = F2(
-	function (conf, model) {
-		var totalSlides = _elm_lang$core$Array$length(model.slides);
+var _larribas$elm_image_slider$ImageSlider$viewThumbnails = F3(
+	function (conf, slides, focusedSlide) {
+		var totalSlides = _elm_lang$core$Array$length(slides);
 		var slidesToShow = function () {
-			var _p3 = {ctor: '_Tuple2', _0: model.focusedSlide - 2, _1: model.focusedSlide + 2};
+			var _p3 = {ctor: '_Tuple2', _0: focusedSlide - 2, _1: focusedSlide + 2};
 			var lowerIndex = _p3._0;
 			var upperIndex = _p3._1;
-			return (_elm_lang$core$Native_Utils.cmp(totalSlides, 5) < 1) ? model.slides : ((_elm_lang$core$Native_Utils.cmp(lowerIndex, 0) < 0) ? A3(_elm_lang$core$Array$slice, 0, 4, model.slides) : ((_elm_lang$core$Native_Utils.cmp(upperIndex, totalSlides) > -1) ? A3(_elm_lang$core$Array$slice, -5, totalSlides, model.slides) : A3(_elm_lang$core$Array$slice, lowerIndex, upperIndex, model.slides)));
+			return (_elm_lang$core$Native_Utils.cmp(totalSlides, 5) < 1) ? slides : ((_elm_lang$core$Native_Utils.cmp(lowerIndex, 0) < 0) ? A3(_elm_lang$core$Array$slice, 0, 4, slides) : ((_elm_lang$core$Native_Utils.cmp(upperIndex, totalSlides) > -1) ? A3(_elm_lang$core$Array$slice, -4, totalSlides, slides) : A3(_elm_lang$core$Array$slice, lowerIndex, upperIndex, slides)));
 		}();
 		return A2(
 			_elm_lang$html$Html$div,
@@ -8772,16 +8742,18 @@ var _larribas$elm_image_slider$ImageSlider$viewThumbnails = F2(
 			_elm_lang$core$Array$toList(
 				A2(
 					_elm_lang$core$Array$indexedMap,
-					A2(_larribas$elm_image_slider$ImageSlider$viewThumbnail, conf, model.focusedSlide),
+					A2(_larribas$elm_image_slider$ImageSlider$viewThumbnail, conf, focusedSlide),
 					slidesToShow)));
 	});
-var _larribas$elm_image_slider$ImageSlider$view = F2(
-	function (conf, model) {
-		var isLastSlide = _elm_lang$core$Native_Utils.cmp(
-			model.focusedSlide,
-			_elm_lang$core$Array$length(model.slides) - 1) > -1;
-		var isFirstSlide = _elm_lang$core$Native_Utils.eq(model.focusedSlide, 0);
-		return _elm_lang$core$Array$isEmpty(model.slides) ? _elm_lang$html$Html$text('') : A2(
+var _larribas$elm_image_slider$ImageSlider$view = F3(
+	function (conf, slides, focusedSlide) {
+		var previous = (_elm_lang$core$Native_Utils.cmp(focusedSlide, 0) > 0) ? (focusedSlide - 1) : 0;
+		var length = _elm_lang$core$Array$length(slides);
+		var isLastSlide = _elm_lang$core$Native_Utils.cmp(focusedSlide, length - 1) > -1;
+		var focused = ((_elm_lang$core$Native_Utils.cmp(focusedSlide, 0) > -1) && (_elm_lang$core$Native_Utils.cmp(focusedSlide, length) < 0)) ? focusedSlide : 0;
+		var next = ((_elm_lang$core$Native_Utils.cmp(focusedSlide, 0) > -1) && (_elm_lang$core$Native_Utils.cmp(focusedSlide, length - 1) < 0)) ? (focusedSlide + 1) : (length - 1);
+		var isFirstSlide = _elm_lang$core$Native_Utils.eq(focusedSlide, 0);
+		return A2(
 			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
@@ -8792,10 +8764,18 @@ var _larribas$elm_image_slider$ImageSlider$view = F2(
 						_elm_lang$core$Dict$fromList(
 							{
 								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 37, _1: _larribas$elm_image_slider$ImageSlider$PreviousSlide},
+								_0: {
+									ctor: '_Tuple2',
+									_0: 37,
+									_1: _larribas$elm_image_slider$ImageSlider$ShowSlide(previous)
+								},
 								_1: {
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 39, _1: _larribas$elm_image_slider$ImageSlider$NextSlide},
+									_0: {
+										ctor: '_Tuple2',
+										_0: 39,
+										_1: _larribas$elm_image_slider$ImageSlider$ShowSlide(next)
+									},
 									_1: {ctor: '[]'}
 								}
 							})),
@@ -8824,7 +8804,8 @@ var _larribas$elm_image_slider$ImageSlider$view = F2(
 								_0: _elm_lang$html$Html_Attributes$class('image-slider-button image-slider-previous-button fa fa-chevron-left'),
 								_1: {
 									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onClick(_larribas$elm_image_slider$ImageSlider$PreviousSlide),
+									_0: _elm_lang$html$Html_Events$onClick(
+										_larribas$elm_image_slider$ImageSlider$ShowSlide(previous)),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Attributes$classList(
@@ -8848,7 +8829,7 @@ var _larribas$elm_image_slider$ImageSlider$view = F2(
 									_1: {ctor: '[]'}
 								},
 								function () {
-									var _p4 = A2(_elm_lang$core$Array$get, model.focusedSlide, model.slides);
+									var _p4 = A2(_elm_lang$core$Array$get, focused, slides);
 									if (_p4.ctor === 'Just') {
 										var _p5 = _p4._0;
 										return {
@@ -8857,13 +8838,17 @@ var _larribas$elm_image_slider$ImageSlider$view = F2(
 												_elm_lang$html$Html$img,
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$src(
-														conf.originalUrl(_p5)),
+													_0: _elm_lang$html$Html_Attributes$class('image-slider-image-main'),
 													_1: {
 														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$alt(
-															conf.alt(_p5)),
-														_1: {ctor: '[]'}
+														_0: _elm_lang$html$Html_Attributes$src(
+															conf.originalUrl(_p5)),
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$alt(
+																conf.alt(_p5)),
+															_1: {ctor: '[]'}
+														}
 													}
 												},
 												{ctor: '[]'}),
@@ -8897,7 +8882,8 @@ var _larribas$elm_image_slider$ImageSlider$view = F2(
 										_0: _elm_lang$html$Html_Attributes$class('image-slider-button image-slider-next-button fa fa-chevron-right'),
 										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html_Events$onClick(_larribas$elm_image_slider$ImageSlider$NextSlide),
+											_0: _elm_lang$html$Html_Events$onClick(
+												_larribas$elm_image_slider$ImageSlider$ShowSlide(next)),
 											_1: {
 												ctor: '::',
 												_0: _elm_lang$html$Html_Attributes$classList(
@@ -8917,7 +8903,7 @@ var _larribas$elm_image_slider$ImageSlider$view = F2(
 					}),
 				_1: {
 					ctor: '::',
-					_0: A2(_larribas$elm_image_slider$ImageSlider$viewThumbnails, conf, model),
+					_0: A3(_larribas$elm_image_slider$ImageSlider$viewThumbnails, conf, slides, focusedSlide),
 					_1: {ctor: '[]'}
 				}
 			});
@@ -9061,7 +9047,7 @@ var _larribas$elm_image_slider$Demo$update = F2(
 		var _p0 = msg;
 		switch (_p0.ctor) {
 			case 'OpenSlider':
-				var _p1 = A2(_larribas$elm_image_slider$ImageSlider$init, _p0._0, _p0._1);
+				var _p1 = _larribas$elm_image_slider$ImageSlider$init(_p0._0);
 				var sliderModel = _p1._0;
 				var cmd = _p1._1;
 				return {
@@ -9100,10 +9086,9 @@ var _larribas$elm_image_slider$Demo$update = F2(
 		}
 	});
 var _larribas$elm_image_slider$Demo$CloseSlider = {ctor: 'CloseSlider'};
-var _larribas$elm_image_slider$Demo$OpenSlider = F2(
-	function (a, b) {
-		return {ctor: 'OpenSlider', _0: a, _1: b};
-	});
+var _larribas$elm_image_slider$Demo$OpenSlider = function (a) {
+	return {ctor: 'OpenSlider', _0: a};
+};
 var _larribas$elm_image_slider$Demo$view = function (model) {
 	var sliderConf = {
 		originalUrl: function (_) {
@@ -9159,7 +9144,7 @@ var _larribas$elm_image_slider$Demo$view = function (model) {
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html_Events$onClick(
-								A2(_larribas$elm_image_slider$Demo$OpenSlider, model.images, index)),
+								_larribas$elm_image_slider$Demo$OpenSlider(index)),
 							_1: {ctor: '[]'}
 						}
 					}
@@ -9196,7 +9181,11 @@ var _larribas$elm_image_slider$Demo$view = function (model) {
 								_0: A2(
 									_elm_lang$html$Html$map,
 									_larribas$elm_image_slider$Demo$SliderMsg,
-									A2(_larribas$elm_image_slider$ImageSlider$view, sliderConf, _p6._0)),
+									A3(
+										_larribas$elm_image_slider$ImageSlider$view,
+										sliderConf,
+										_elm_lang$core$Array$fromList(model.images),
+										_p6._0)),
 								_1: {
 									ctor: '::',
 									_0: A2(

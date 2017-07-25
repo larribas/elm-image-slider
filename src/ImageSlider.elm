@@ -1,4 +1,4 @@
-module ImageSlider exposing (Config, Model, Msg(..), init, update, view)
+module ImageSlider exposing (Config, FocusedSlide, Msg(..), init, update, view)
 
 {-| A component to display and navigate through an image carousel. See the [demo here](https://larribas.github.io/elm-image-slider/) to get a clear idea.
 
@@ -9,7 +9,7 @@ You can supply any type to the carousel, as long as you can supply functions tha
 
 # Main workflow
 
-@docs Msg, Model, Config, init, update, view
+@docs Msg, FocusedSlide, Config, init, update, view
 
 -}
 
@@ -27,17 +27,12 @@ import Task
 -}
 type Msg
     = ShowSlide Int
-    | NextSlide
-    | PreviousSlide
-    | NoOp
 
 
-{-| Minimal model for the component. It remembers its current position given an array of slides. Slides can be any type, as long as you are able to supply the functions described in @Config
+{-| Minimal model for the component. It remembers the currently focused image on the slider
 -}
-type alias Model a =
-    { focusedSlide : Int
-    , slides : Array a
-    }
+type alias FocusedSlide =
+    Int
 
 
 {-| Holds all necessary transformations to display the image slider
@@ -50,105 +45,100 @@ type alias Config a =
     }
 
 
-{-| Initialize the component's state with an (Array, Index) pair. Should the index be out of range, it defaults to the first element.
+{-| Initialize the component's state.
 -}
-init : List a -> Int -> ( Model a, Cmd Msg )
-init slides i =
-    ( { focusedSlide =
-            if i >= 0 && i < List.length slides then
-                i
-            else
-                0
-      , slides = Array.fromList slides
-      }
-    , Task.attempt (\_ -> NoOp) (Dom.focus "image-slider-container")
-    )
+init : Int -> ( FocusedSlide, Cmd Msg )
+init i =
+    ( i, Task.attempt (\_ -> ShowSlide i) (Dom.focus "image-slider-container") )
 
 
 {-| Updates the component's state
 -}
-update : Msg -> Model a -> Model a
-update msg model =
+update : Msg -> FocusedSlide -> FocusedSlide
+update msg focusedSlide =
     case msg of
         ShowSlide i ->
-            { model | focusedSlide = i }
-
-        NextSlide ->
-            if model.focusedSlide + 1 >= Array.length model.slides then
-                model
-            else
-                { model | focusedSlide = model.focusedSlide + 1 }
-
-        PreviousSlide ->
-            if model.focusedSlide - 1 < 0 then
-                model
-            else
-                { model | focusedSlide = model.focusedSlide - 1 }
-
-        NoOp ->
-            model
+            i
 
 
 {-| Renders the component visually. Should the slide array be empty, it displays nothing
 -}
-view : Config a -> Model a -> Html Msg
-view conf model =
+view : Config a -> Array a -> FocusedSlide -> Html Msg
+view conf slides focusedSlide =
     let
         isFirstSlide =
-            model.focusedSlide == 0
+            focusedSlide == 0
+
+        length =
+            Array.length slides
 
         isLastSlide =
-            model.focusedSlide >= Array.length model.slides - 1
+            focusedSlide >= length - 1
+
+        focused =
+            if focusedSlide >= 0 && focusedSlide < length then
+                focusedSlide
+            else
+                0
+
+        previous =
+            if focusedSlide > 0 then
+                focusedSlide - 1
+            else
+                0
+
+        next =
+            if focusedSlide >= 0 && focusedSlide < length - 1 then
+                focusedSlide + 1
+            else
+                length - 1
     in
-    if Array.isEmpty model.slides then
-        Html.text ""
-    else
-        Html.div
-            [ Attr.id "image-slider-container"
-            , onKeyDown <| Dict.fromList [ ( 37, PreviousSlide ), ( 39, NextSlide ) ]
-            , Attr.tabindex 1
+    Html.div
+        [ Attr.id "image-slider-container"
+        , onKeyDown <| Dict.fromList [ ( 37, ShowSlide previous ), ( 39, ShowSlide next ) ]
+        , Attr.tabindex 1
+        ]
+        [ Html.div [ Attr.class "image-slider-navigation-container" ]
+            [ Html.i [ Attr.class "image-slider-button image-slider-previous-button fa fa-chevron-left", Event.onClick <| ShowSlide previous, Attr.classList [ ( "image-slider-hidden", isFirstSlide ) ] ] []
+            , Html.div [ Attr.class "image-slider-image-container" ]
+                (case Array.get focused slides of
+                    Just image ->
+                        [ Html.img [ Attr.class "image-slider-image-main", Attr.src (image |> conf.originalUrl), Attr.alt (image |> conf.alt) ] []
+                        , image |> conf.caption
+                        ]
+
+                    Nothing ->
+                        [ Html.span [ Attr.class "image-slider-no-images" ] [] ]
+                )
+            , Html.i [ Attr.class "image-slider-button image-slider-next-button fa fa-chevron-right", Event.onClick <| ShowSlide next, Attr.classList [ ( "image-slider-hidden", isLastSlide ) ] ] []
             ]
-            [ Html.div [ Attr.class "image-slider-navigation-container" ]
-                [ Html.i [ Attr.class "image-slider-button image-slider-previous-button fa fa-chevron-left", Event.onClick PreviousSlide, Attr.classList [ ( "image-slider-hidden", isFirstSlide ) ] ] []
-                , Html.div [ Attr.class "image-slider-image-container" ]
-                    (case Array.get model.focusedSlide model.slides of
-                        Just image ->
-                            [ Html.img [ Attr.src (image |> conf.originalUrl), Attr.alt (image |> conf.alt) ] []
-                            , image |> conf.caption
-                            ]
-
-                        Nothing ->
-                            [ Html.span [ Attr.class "image-slider-no-images" ] [] ]
-                    )
-                , Html.i [ Attr.class "image-slider-button image-slider-next-button fa fa-chevron-right", Event.onClick NextSlide, Attr.classList [ ( "image-slider-hidden", isLastSlide ) ] ] []
-                ]
-            , viewThumbnails conf model
-            ]
+        , viewThumbnails conf slides focusedSlide
+        ]
 
 
-viewThumbnails : Config a -> Model a -> Html Msg
-viewThumbnails conf model =
+viewThumbnails : Config a -> Array a -> FocusedSlide -> Html Msg
+viewThumbnails conf slides focusedSlide =
     let
         totalSlides =
-            Array.length model.slides
+            Array.length slides
 
         slidesToShow =
             let
                 ( lowerIndex, upperIndex ) =
-                    ( model.focusedSlide - 2, model.focusedSlide + 2 )
+                    ( focusedSlide - 2, focusedSlide + 2 )
             in
             if totalSlides <= 5 then
-                model.slides
+                slides
             else if lowerIndex < 0 then
-                model.slides |> Array.slice 0 4
+                slides |> Array.slice 0 4
             else if upperIndex >= totalSlides then
-                model.slides |> Array.slice -5 totalSlides
+                slides |> Array.slice -4 totalSlides
             else
-                model.slides |> Array.slice lowerIndex upperIndex
+                slides |> Array.slice lowerIndex upperIndex
     in
     Html.div [ Attr.class "image-slider-all-images-container" ]
         (slidesToShow
-            |> Array.indexedMap (viewThumbnail conf model.focusedSlide)
+            |> Array.indexedMap (viewThumbnail conf focusedSlide)
             |> Array.toList
         )
 
