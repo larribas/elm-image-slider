@@ -27,12 +27,12 @@ type alias Image =
 
 type alias Model =
     { images : List Image
-    , slider : Maybe (ImageSlider.Model Image)
+    , slider : Maybe ImageSlider.FocusedSlide
     }
 
 
 type Msg
-    = OpenSlider (List Image) Int
+    = OpenSlider Int
     | CloseSlider
     | SliderMsg ImageSlider.Msg
 
@@ -50,17 +50,17 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        OpenSlider images i ->
+        OpenSlider i ->
             let
                 ( sliderModel, cmd ) =
-                    ImageSlider.init images i
+                    ImageSlider.init i
             in
             ( { model | slider = Just sliderModel }, Cmd.map SliderMsg cmd )
 
         SliderMsg sliderMsg ->
             case model.slider of
-                Just sliderModel ->
-                    ( { model | slider = Just (ImageSlider.update sliderMsg sliderModel) }, Cmd.none )
+                Just focusedSlide ->
+                    ( { model | slider = Just (ImageSlider.update sliderMsg focusedSlide) }, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -76,7 +76,7 @@ view model =
             Html.img
                 [ Attr.src thumbnail
                 , Attr.alt source
-                , Ev.onClick <| OpenSlider model.images index
+                , Ev.onClick <| OpenSlider index
                 ]
                 []
 
@@ -96,10 +96,10 @@ view model =
     Html.div []
         [ Html.div [ Attr.class "image-gallery" ] (List.indexedMap toImg exampleImages)
         , case model.slider of
-            Just sliderModel ->
+            Just focusedSlide ->
                 Html.div
                     [ onEscape CloseSlider ]
-                    [ ImageSlider.view sliderConf sliderModel |> Html.map SliderMsg
+                    [ ImageSlider.view sliderConf (Array.fromList model.images) focusedSlide |> Html.map SliderMsg
                     , Html.i [ Attr.class "image-slider-button image-slider-quit-button fa fa-remove", Ev.onClick CloseSlider ] []
                     ]
 
