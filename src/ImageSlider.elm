@@ -1,4 +1,4 @@
-module ImageSlider exposing (Config, FocusedSlide, Msg(..), init, update, view)
+module ImageSlider exposing (Config, Msg, State, init, update, view)
 
 {-| A component to display and navigate through an image carousel. See the [demo here](https://larribas.github.io/elm-image-slider/) to get a clear idea.
 
@@ -9,7 +9,7 @@ You can supply any type to the carousel, as long as you can supply functions tha
 
 # Main workflow
 
-@docs Msg, FocusedSlide, Config, init, update, view
+@docs Msg, State, Config, init, update, view
 
 -}
 
@@ -29,10 +29,10 @@ type Msg
     = ShowSlide Int
 
 
-{-| Minimal model for the component. It remembers the currently focused image on the slider
+{-| Minimal state for the component. It remembers the currently focused image on the slider
 -}
-type alias FocusedSlide =
-    Int
+type State
+    = State Int
 
 
 {-| Holds all necessary transformations to display the image slider
@@ -47,24 +47,24 @@ type alias Config a =
 
 {-| Initialize the component's state.
 -}
-init : Int -> ( FocusedSlide, Cmd Msg )
+init : Int -> ( State, Cmd Msg )
 init i =
-    ( i, Task.attempt (\_ -> ShowSlide i) (Dom.focus "image-slider-container") )
+    ( State i, Task.attempt (\_ -> ShowSlide i) (Dom.focus "image-slider-container") )
 
 
 {-| Updates the component's state
 -}
-update : Msg -> FocusedSlide -> FocusedSlide
-update msg focusedSlide =
+update : Msg -> State -> State
+update msg _ =
     case msg of
         ShowSlide i ->
-            i
+            State i
 
 
 {-| Renders the component visually. Should the slide array be empty, it displays nothing
 -}
-view : Config a -> Array a -> FocusedSlide -> Html Msg
-view conf slides focusedSlide =
+view : Config a -> Array a -> State -> Html Msg
+view conf slides (State focusedSlide) =
     let
         isFirstSlide =
             focusedSlide == 0
@@ -116,7 +116,7 @@ view conf slides focusedSlide =
         ]
 
 
-viewThumbnails : Config a -> Array a -> FocusedSlide -> Html Msg
+viewThumbnails : Config a -> Array a -> Int -> Html Msg
 viewThumbnails conf slides focusedSlide =
     let
         totalSlides =

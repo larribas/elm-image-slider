@@ -27,7 +27,7 @@ type alias Image =
 
 type alias Model =
     { images : List Image
-    , slider : Maybe ImageSlider.FocusedSlide
+    , slider : Maybe ImageSlider.State
     }
 
 

@@ -2,14 +2,13 @@ module Main exposing (..)
 
 import Array exposing (Array)
 import Expect exposing (Expectation)
-import Fuzz exposing (Fuzzer, int, list, string)
-import Html
+import Html exposing (Html)
 import Html.Attributes as Attr
 import ImageSlider
 import Test exposing (..)
-import Test.Html.Event as Event
+import Test.Html.Event as Event exposing (Event)
 import Test.Html.Query as Query
-import Test.Html.Selector as Selector
+import Test.Html.Selector as Selector exposing (Selector)
 
 
 suite : Test
@@ -19,47 +18,37 @@ suite =
         [ describe "view"
             [ test "it defaults to index 0 when out of range" <|
                 \_ ->
-                    ImageSlider.view basicConfig (slidesOfSize 3) 100
-                        |> Query.fromHtml
-                        |> Query.find [ Selector.class "image-slider-image-main" ]
-                        |> Query.has [ Selector.tag "img", Selector.attribute <| Attr.src "1" ]
+                    ImageSlider.view basicConfig (slidesOfSize 3) (init 100)
+                        |> expectSelectedImage 0
             , test "it goes to the next slide when clicking on the button" <|
                 \_ ->
-                    ImageSlider.view basicConfig (slidesOfSize 3) 0
-                        |> Query.fromHtml
-                        |> Query.find [ Selector.class "image-slider-next-button" ]
-                        |> Event.simulate Event.click
-                        |> Event.expect (ImageSlider.ShowSlide 1)
+                    [ Selector.class "image-slider-next-button" ]
+                        |> click basicConfig (slidesOfSize 3) 0
+                        |> expectOk (expectSelectedImage 1)
             , test "it goes to the previous slide when clicking on the button" <|
                 \_ ->
-                    ImageSlider.view basicConfig (slidesOfSize 3) 2
-                        |> Query.fromHtml
-                        |> Query.find [ Selector.class "image-slider-previous-button" ]
-                        |> Event.simulate Event.click
-                        |> Event.expect (ImageSlider.ShowSlide 1)
+                    [ Selector.class "image-slider-previous-button" ]
+                        |> click basicConfig (slidesOfSize 3) 2
+                        |> expectOk (expectSelectedImage 1)
             , test "it cannot go to the next slide from the last one" <|
                 \_ ->
-                    ImageSlider.view basicConfig (slidesOfSize 3) 2
-                        |> Query.fromHtml
-                        |> Query.find [ Selector.class "image-slider-next-button" ]
-                        |> Event.simulate Event.click
-                        |> Event.expect (ImageSlider.ShowSlide 2)
+                    [ Selector.class "image-slider-next-button" ]
+                        |> click basicConfig (slidesOfSize 3) 2
+                        |> expectOk (expectSelectedImage 2)
             , test "it cannot go to the previous slide from the first one" <|
                 \_ ->
-                    ImageSlider.view basicConfig (slidesOfSize 3) 0
-                        |> Query.fromHtml
-                        |> Query.find [ Selector.class "image-slider-previous-button" ]
-                        |> Event.simulate Event.click
-                        |> Event.expect (ImageSlider.ShowSlide 0)
+                    [ Selector.class "image-slider-previous-button" ]
+                        |> click basicConfig (slidesOfSize 3) 0
+                        |> expectOk (expectSelectedImage 0)
             , test "it shows an is-empty message when the array is empty" <|
                 \_ ->
-                    ImageSlider.view basicConfig Array.empty 0
+                    ImageSlider.view basicConfig Array.empty (init 0)
                         |> Query.fromHtml
                         |> Query.findAll [ Selector.class "image-slider-no-images" ]
                         |> Query.count (Expect.equal 1)
             , test "it does not show an is-empty message when the array is not empty" <|
                 \_ ->
-                    ImageSlider.view basicConfig (slidesOfSize 3) 0
+                    ImageSlider.view basicConfig (slidesOfSize 3) (init 0)
                         |> Query.fromHtml
                         |> Query.findAll [ Selector.class "image-slider-no-images" ]
                         |> Query.count (Expect.equal 0)
@@ -90,9 +79,14 @@ basicConfig =
     }
 
 
+init : Int -> ImageSlider.State
+init =
+    ImageSlider.init >> Tuple.first
+
+
 thumbnailContainer : Int -> Int -> Query.Single ImageSlider.Msg
 thumbnailContainer size focusedSlide =
-    ImageSlider.view basicConfig (slidesOfSize size) focusedSlide
+    ImageSlider.view basicConfig (slidesOfSize size) (init focusedSlide)
         |> Query.fromHtml
         |> Query.find [ Selector.class "image-slider-all-images-container" ]
 
@@ -105,3 +99,41 @@ has i =
 hasNot : Int -> Query.Single ImageSlider.Msg -> Expectation
 hasNot i =
     Query.hasNot [ Selector.tag "img", Selector.attribute <| Attr.src <| toString i ]
+
+
+click : ImageSlider.Config a -> Array a -> Int -> List Selector -> Result String (Html ImageSlider.Msg)
+click config slides focusedSlide clickSelector =
+    let
+        state =
+            init focusedSlide
+    in
+    ImageSlider.view config slides state
+        |> Query.fromHtml
+        |> Query.find clickSelector
+        |> Event.simulate Event.click
+        |> Event.toResult
+        |> Result.map
+            (\msg ->
+                ImageSlider.update msg state
+                    |> ImageSlider.view config slides
+            )
+
+
+expectOk : (a -> Expectation) -> Result err a -> Expectation
+expectOk f result =
+    case result of
+        Ok value ->
+            f value
+
+        Err err ->
+            Expect.fail <| "error: " ++ toString err
+
+
+expectSelectedImage : Int -> Html ImageSlider.Msg -> Expectation
+expectSelectedImage index =
+    Query.fromHtml
+        >> Query.find [ Selector.class "image-slider-image-main" ]
+        >> Query.has
+            [ Selector.tag "img"
+            , Selector.attribute <| Attr.src <| toString (index + 1)
+            ]
