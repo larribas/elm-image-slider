@@ -19,7 +19,7 @@ div.image-slider-navigation-container {
   flex-direction: row;
   height: var(--nav-height-ratio);
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
 }
 
 .image-slider-hidden {
