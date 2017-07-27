@@ -1,5 +1,5 @@
 {
-    "version": "2.0.0",
+    "version": "3.0.0",
     "summary": "An image slider / slideshow / carousel component for Elm",
     "repository": "https://github.com/larribas/elm-image-slider.git",
     "license": "BSD3-Clause",
