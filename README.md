@@ -1,5 +1,5 @@
 # elm-image-slider [![Build Status](https://travis-ci.org/larribas/elm-image-slider.svg?branch=master)](https://travis-ci.org/larribas/elm-image-slider)
-A multi-value input for Elm
+An image slider / slideshow / carousel component for Elm
 
 
 ## [Try it out](https://larribas.github.io/elm-image-slider/)
