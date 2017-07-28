@@ -122,30 +122,30 @@ viewThumbnails conf slides focusedSlide =
         totalSlides =
             Array.length slides
 
-        slidesToShow =
+        ( slidesToShow, offset ) =
             let
                 ( lowerIndex, upperIndex ) =
                     ( focusedSlide - 2, focusedSlide + 2 )
             in
             if totalSlides <= 5 then
-                slides
+                ( slides, 0 )
             else if lowerIndex < 0 then
-                slides |> Array.slice 0 4
+                ( slides |> Array.slice 0 4, 0 )
             else if upperIndex >= totalSlides then
-                slides |> Array.slice -4 totalSlides
+                ( slides |> Array.slice -4 totalSlides, totalSlides - 4 )
             else
-                slides |> Array.slice lowerIndex upperIndex
+                ( slides |> Array.slice lowerIndex upperIndex, lowerIndex )
     in
     Html.div [ Attr.class "image-slider-all-images-container" ]
         (slidesToShow
-            |> Array.indexedMap (viewThumbnail conf focusedSlide)
+            |> Array.indexedMap (viewThumbnail conf offset focusedSlide)
             |> Array.toList
         )
 
 
-viewThumbnail : Config a -> Int -> Int -> a -> Html Msg
-viewThumbnail conf focusedSlide i image =
-    Html.img [ Attr.src (image |> conf.thumbnailUrl), Attr.alt (image |> conf.alt), Attr.classList [ ( "image-slider-current-image", i == focusedSlide ) ], Event.onClick <| ShowSlide i ] []
+viewThumbnail : Config a -> Int -> Int -> Int -> a -> Html Msg
+viewThumbnail conf offset focusedSlide i image =
+    Html.img [ Attr.src (image |> conf.thumbnailUrl), Attr.alt (image |> conf.alt), Attr.classList [ ( "image-slider-current-image", i == focusedSlide - offset ) ], Event.onClick <| ShowSlide (i + offset) ] []
 
 
 {-| Utility function to bind several keys to an element, and only react to those specific keys
