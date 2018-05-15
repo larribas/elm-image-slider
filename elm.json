@@ -3,7 +3,7 @@
     "name": "larribas/elm-image-slider",
     "summary": "An image slider / slideshow / carousel component for Elm",
     "license": "BSD-3-Clause",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "exposed-modules": [
         "ImageSlider"
     ],
