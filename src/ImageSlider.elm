@@ -14,8 +14,8 @@ You can supply any type to the carousel, as long as you can supply functions tha
 -}
 
 import Array exposing (Array)
+import Browser
 import Dict exposing (Dict)
-import Dom
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Events as Event
@@ -49,7 +49,7 @@ type alias Config a =
 -}
 init : Int -> ( State, Cmd Msg )
 init i =
-    ( State i, Task.attempt (\_ -> ShowSlide i) (Dom.focus "image-slider-container") )
+    ( State i, Task.attempt (\_ -> ShowSlide i) (Browser.focus "image-slider-container") )
 
 
 {-| Updates the component's state
@@ -159,6 +159,6 @@ onKeyDown keysAndMsgs =
                     Json.succeed msg
 
                 Nothing ->
-                    Json.fail <| "Unexpected keyCode " ++ toString keyCode
+                    Json.fail <| "Unexpected keyCode " ++ String.fromInt keyCode
     in
     Event.on "keydown" <| Json.andThen handle Event.keyCode
