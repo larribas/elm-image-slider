@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (basicConfig, click, expectOk, expectSelectedImage, has, hasNot, init, slidesOfSize, suite, thumbnailContainer)
 
 import Array exposing (Array)
 import Expect exposing (Expectation)
