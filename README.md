@@ -9,7 +9,7 @@ An image slider / slideshow / carousel component for Elm
 Install the package:
 
 ```
-elm-package install larribas/elm-image-slider
+elm install larribas/elm-image-slider
 ```
 
 The `demo/Demo.elm` file is a good example of how this component can be integrated into an Elm application. It demonstrates several recommended use patterns:
