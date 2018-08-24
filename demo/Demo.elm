@@ -11,7 +11,7 @@ import Json.Decode as Json
 
 main : Program () Model Msg
 main =
-    Browser.embed
+    Browser.element
         { init = always init
         , update = update
         , view = view
@@ -115,6 +115,7 @@ onEscape msg =
         handle keyCode =
             if keyCode == 27 then
                 Json.succeed msg
+
             else
                 Json.fail <| "Unexpected keyCode " ++ String.fromInt keyCode
     in

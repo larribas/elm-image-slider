@@ -1,4 +1,4 @@
-module ImageSlider exposing (Config, Msg, State, init, update, view)
+module ImageSlider exposing (Msg, State, Config, init, update, view)
 
 {-| A component to display and navigate through an image carousel. See the [demo here](https://larribas.github.io/elm-image-slider/) to get a clear idea.
 
@@ -14,7 +14,7 @@ You can supply any type to the carousel, as long as you can supply functions tha
 -}
 
 import Array exposing (Array)
-import Browser
+import Browser.Dom as Dom
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -49,7 +49,7 @@ type alias Config a =
 -}
 init : Int -> ( State, Cmd Msg )
 init i =
-    ( State i, Task.attempt (\_ -> ShowSlide i) (Browser.focus "image-slider-container") )
+    ( State i, Task.attempt (\_ -> ShowSlide i) (Dom.focus "image-slider-container") )
 
 
 {-| Updates the component's state
@@ -78,18 +78,21 @@ view conf slides (State focusedSlide) =
         focused =
             if focusedSlide >= 0 && focusedSlide < length then
                 focusedSlide
+
             else
                 0
 
         previous =
             if focusedSlide > 0 then
                 focusedSlide - 1
+
             else
                 0
 
         next =
             if focusedSlide >= 0 && focusedSlide < length - 1 then
                 focusedSlide + 1
+
             else
                 length - 1
     in
@@ -99,18 +102,33 @@ view conf slides (State focusedSlide) =
         , Attr.tabindex 1
         ]
         [ Html.div [ Attr.class "image-slider-navigation-container" ]
-            [ Html.i [ Attr.class "image-slider-button image-slider-previous-button fa fa-chevron-left", Event.onClick <| ShowSlide previous, Attr.classList [ ( "image-slider-hidden", isFirstSlide ) ] ] []
+            [ Html.i
+                [ Attr.class "image-slider-button image-slider-previous-button fa fa-chevron-left"
+                , Event.onClick <| ShowSlide previous
+                , Attr.classList [ ( "image-slider-hidden", isFirstSlide ) ]
+                ]
+                []
             , Html.div [ Attr.class "image-slider-image-container" ]
                 (case Array.get focused slides of
                     Just image ->
-                        [ Html.img [ Attr.class "image-slider-image-main", Attr.src (image |> conf.originalUrl), Attr.alt (image |> conf.alt) ] []
+                        [ Html.img
+                            [ Attr.class "image-slider-image-main"
+                            , Attr.src (image |> conf.originalUrl)
+                            , Attr.alt (image |> conf.alt)
+                            ]
+                            []
                         , image |> conf.caption
                         ]
 
                     Nothing ->
                         [ Html.span [ Attr.class "image-slider-no-images" ] [] ]
                 )
-            , Html.i [ Attr.class "image-slider-button image-slider-next-button fa fa-chevron-right", Event.onClick <| ShowSlide next, Attr.classList [ ( "image-slider-hidden", isLastSlide ) ] ] []
+            , Html.i
+                [ Attr.class "image-slider-button image-slider-next-button fa fa-chevron-right"
+                , Event.onClick <| ShowSlide next
+                , Attr.classList [ ( "image-slider-hidden", isLastSlide ) ]
+                ]
+                []
             ]
         , viewThumbnails conf slides focusedSlide
         ]
@@ -129,10 +147,13 @@ viewThumbnails conf slides focusedSlide =
             in
             if totalSlides <= 5 then
                 ( slides, 0 )
+
             else if lowerIndex < 0 then
                 ( slides |> Array.slice 0 4, 0 )
+
             else if upperIndex >= totalSlides then
                 ( slides |> Array.slice -4 totalSlides, totalSlides - 4 )
+
             else
                 ( slides |> Array.slice lowerIndex upperIndex, lowerIndex )
     in
@@ -145,7 +166,17 @@ viewThumbnails conf slides focusedSlide =
 
 viewThumbnail : Config a -> Int -> Int -> Int -> a -> Html Msg
 viewThumbnail conf offset focusedSlide i image =
-    Html.img [ Attr.src (image |> conf.thumbnailUrl), Attr.alt (image |> conf.alt), Attr.classList [ ( "image-slider-current-image", i == focusedSlide - offset ) ], Event.onClick <| ShowSlide (i + offset) ] []
+    Html.img
+        [ Attr.src (image |> conf.thumbnailUrl)
+        , Attr.alt (image |> conf.alt)
+        , Attr.classList
+            [ ( "image-slider-current-image"
+              , i == focusedSlide - offset
+              )
+            ]
+        , Event.onClick <| ShowSlide (i + offset)
+        ]
+        []
 
 
 {-| Utility function to bind several keys to an element, and only react to those specific keys
